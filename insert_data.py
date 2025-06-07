@@ -14,9 +14,6 @@ class Sale(BaseModel):
     price: float
     country: str
 
-# Connexion PostgreSQL
-DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
-
 @router.post("/insert")
 def insert_sale(sale: Sale):
     if not DATABASE_URL:
