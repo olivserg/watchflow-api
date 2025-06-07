@@ -1,51 +1,47 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import psycopg2
 import os
+from dotenv import load_dotenv
+from datetime import datetime
+
+load_dotenv()
 
 router = APIRouter()
 
-class SelloutData(BaseModel):
-    reference: str
-    location: str
-    date: str
-    time: str
-    price: float
-    serial_number: str | None = None
+# Schéma de données attendu
+class Sale(BaseModel):
     brand: str
+    model: str
+    sold_at: datetime
+    price: float
+    country: str
+
+# Connexion PostgreSQL
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 @router.post("/insert")
-def insert_data(data: SelloutData):
+def insert_sale(sale: Sale):
     try:
-        conn = psycopg2.connect(os.environ["DATABASE_URL"])
+        conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
         cur.execute("""
-            CREATE TABLE IF NOT EXISTS sellout_data (
+            CREATE TABLE IF NOT EXISTS watch_sales (
                 id SERIAL PRIMARY KEY,
-                reference TEXT,
-                location TEXT,
-                date DATE,
-                time TIME,
-                price FLOAT,
-                serial_number TEXT,
-                brand TEXT
+                brand TEXT,
+                model TEXT,
+                sold_at TIMESTAMP,
+                price NUMERIC,
+                country TEXT
             )
         """)
         cur.execute("""
-            INSERT INTO sellout_data (reference, location, date, time, price, serial_number, brand)
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-        """, (
-            data.reference,
-            data.location,
-            data.date,
-            data.time,
-            data.price,
-            data.serial_number,
-            data.brand
-        ))
+            INSERT INTO watch_sales (brand, model, sold_at, price, country)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (sale.brand, sale.model, sale.sold_at, sale.price, sale.country))
         conn.commit()
         cur.close()
         conn.close()
-        return {"status": "success"}
+        return {"message": "Sale inserted successfully"}
     except Exception as e:
-        return {"status": "error", "details": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
