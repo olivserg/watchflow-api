@@ -1,15 +1,12 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-import psycopg2
 import os
-from dotenv import load_dotenv
+import psycopg2
+from psycopg2.extensions import parse_dsn
+from fastapi import APIRouter
+from pydantic import BaseModel
 from datetime import datetime
-
-load_dotenv()
 
 router = APIRouter()
 
-# Schéma de données attendu
 class Sale(BaseModel):
     brand: str
     model: str
@@ -17,13 +14,12 @@ class Sale(BaseModel):
     price: float
     country: str
 
-# Connexion PostgreSQL
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 @router.post("/insert")
 def insert_sale(sale: Sale):
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(DATABASE_URL, sslmode='require')
         cur = conn.cursor()
         cur.execute("""
             CREATE TABLE IF NOT EXISTS watch_sales (
@@ -44,4 +40,4 @@ def insert_sale(sale: Sale):
         conn.close()
         return {"message": "Sale inserted successfully"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"error": str(e)}
