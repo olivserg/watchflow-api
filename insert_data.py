@@ -24,7 +24,14 @@ def insert_sale(sale: Sale):
 
     try:
         print(f"DATABASE_URL: {DATABASE_URL!r}")
-        conn = psycopg2.connect(dsn=DATABASE_URL)
+        conn = psycopg2.connect(
+    dbname="railway",
+    user="postgres",
+    password="IKABjccoetNZoGPAzNLCzQajvLlNbvVp",
+    host="switchback.proxy.rlwy.net",
+    port="53686"
+)
+
         cur = conn.cursor()
 
         cur.execute("""
