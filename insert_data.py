@@ -23,6 +23,7 @@ def insert_sale(sale: Sale):
         raise HTTPException(status_code=500, detail="DATABASE_URL is not set")
 
     try:
+        print(f"DATABASE_URL: {DATABASE_URL!r}")
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
 
