@@ -14,7 +14,8 @@ class Sale(BaseModel):
     price: float
     country: str
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+print("DATABASE_URL:", repr(DATABASE_URL))
 
 @router.post("/insert")
 def insert_sale(sale: Sale):
